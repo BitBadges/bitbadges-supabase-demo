@@ -114,27 +114,30 @@ export async function revokeToken(userId: string) {
     // Get the refresh token from Supabase
     const { data: tokenData } = await supabase
         .from('bitbadges_tokens')
-        .select('refresh_token')
+        .select('access_token')
         .eq('user_id', userId)
         .single();
 
-    if (!tokenData?.refresh_token) {
-        throw new Error('No refresh token found');
+    if (!tokenData?.access_token) {
+        throw new Error('No access token found');
     }
+
+    console.log('Revoking token:', tokenData.access_token);
 
     // Revoke the token with BitBadges
     const response = await fetch(BITBADGES_REVOKE_URL, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
             'x-api-key': process.env.BITBADGES_API_KEY!,
+            Authorization: `Bearer ${tokenData.access_token}`,
         },
-        body: new URLSearchParams({
-            token: tokenData.refresh_token,
-            client_id: process.env.BITBADGES_CLIENT_ID!,
-            client_secret: process.env.BITBADGES_CLIENT_SECRET!,
+        body: JSON.stringify({
+            token: tokenData.access_token,
         }),
     });
+
+    console.log('Revoke response:', response);
 
     if (!response.ok) {
         throw new Error(`Failed to revoke token: ${response.statusText}`);
