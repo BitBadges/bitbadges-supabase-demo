@@ -130,7 +130,6 @@ export async function revokeToken(userId: string) {
         headers: {
             'Content-Type': 'application/json',
             'x-api-key': process.env.BITBADGES_API_KEY!,
-            Authorization: `Bearer ${tokenData.access_token}`,
         },
         body: JSON.stringify({
             token: tokenData.access_token,
